@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BabyMP3YouToo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: white;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: sans-serif;
+    }
+
+    .container {
+      text-align: center;
+      width: 100%;
+      position: relative;
+    }
+
+    input[type="text"], select {
+      width: 60%;
+      padding: 15px;
+      font-size: 18px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0px 0px 8px #eee;
+      margin: 10px 0;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 12px 25px;
+      font-size: 16px;
+      background-color: black;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .disclaimer-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .disclaimer-popup {
+      display: none;
+      position: fixed;
+      bottom: 60px;
+      right: 20px;
+      width: 280px;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-top: 2px solid #999;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #cancelBtn {
+      display: none;
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #ccc;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <form id="downloadForm" action="/convert" method="post" onsubmit="return handleDownload()">
+      <input type="text" name="url" id="urlInput" placeholder="Paste your link here!" required><br>
+
+      <label for="quality">Select MP3 Quality:</label><br>
+      <select name="quality" id="quality" required>
+        <option value="128">Low (128 kbps)</option>
+        <option value="192" selected>Medium (192 kbps)</option>
+        <option value="320">High (320 kbps)</option>
+      </select><br>
+
+      <label for="filename">Save As (without .mp3):</label><br>
+      <input type="text" name="filename" id="filename" placeholder="MySong" required><br>
+
+      <button type="submit" id="downloadBtn">Download Now</button>
+      <button type="button" id="cancelBtn" onclick="cancelDownload()">Cancel</button>
+
+      <!-- Spinner + Progress -->
+      <div id="progressWrapper" style="margin-top:20px; width:60%; margin-left:auto; margin-right:auto; display:none;">
+        <div style="width:100%; background:#eee; border-radius:8px;">
+          <div id="progressBar" style="width:0%; background:black; height:20px; border-radius:8px; transition: width 0.3s;"></div>
+        </div>
+        <p id="progressText" style="font-size:14px;">Converting...</p>
+      </div>
+    </form>
+  </div>
+
+  <!-- Disclaimer Icon -->
+  <div class="disclaimer-icon" onclick="toggleDisclaimer()">ⓘ</div>
+  <div class="disclaimer-popup" id="disclaimer">
+    <strong>Legal Disclaimer:</strong><br>
+    This tool is intended solely for the personal use of Kiran Baby Joseph.
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    const input = document.getElementById('urlInput');
+
+    window.onload = async function () {
+      input.focus();
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text.startsWith("http") && text.includes("youtube.com")) {
+          input.value = text;
+        }
+      } catch (err) {
+        console.log("Clipboard access denied.");
+      }
+    };
+
+    function toggleDisclaimer() {
+      const popup = document.getElementById('disclaimer');
+      popup.style.display = (popup.style.display === "none" || popup.style.display === "") ? "block" : "none";
+    }
+
+    input.addEventListener('focus', function () {
+      if (!this.value) this.placeholder = '';
+    });
+
+    input.addEventListener('blur', function () {
+      if (!this.value) this.placeholder = 'Paste your link here!';
+    });
+
+    function handleDownload() {
+      const downloadBtn = document.getElementById("downloadBtn");
+      const cancelBtn = document.getElementById("cancelBtn");
+      const progressBar = document.getElementById("progressBar");
+      const progressWrapper = document.getElementById("progressWrapper");
+
+      // Disable submit button, show spinner
+      downloadBtn.disabled = true;
+      downloadBtn.innerHTML = 'Converting... <div class="spinner"></div>';
+      cancelBtn.style.display = "inline-block";
+      progressWrapper.style.display = "block";
+
+      // Animate the fake progress bar
+      let width = 0;
+      const interval = setInterval(() => {
+        if (width >= 90) {
+          clearInterval(interval); // Wait for backend
+        } else {
+          width += 3;
+          progressBar.style.width = width + "%";
+        }
+      }, 300);
+
+      return true; // allow form to submit
+    }
+
+    function cancelDownload() {
+      window.location.reload(); // reloads the page
+    }
+  </script>
+
+</body>
+</html>
