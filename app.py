@@ -81,6 +81,7 @@ def convert():
             'preferredcodec': 'mp3',
             'preferredquality': quality,
         }],
+        'cookiefile': 'youtube_cookies.txt',  # 🧠 Required to bypass YouTube blocks
     }
 
     try:
@@ -94,8 +95,7 @@ def convert():
         if os.path.exists(output_filename):
             os.remove(output_filename)
 
-# Required for Render dynamic port
+# ✅ This part ensures it works on Render.com (dynamic ports)
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
-
